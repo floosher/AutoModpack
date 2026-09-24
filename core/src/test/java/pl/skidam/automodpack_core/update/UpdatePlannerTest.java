@@ -65,6 +65,22 @@ class UpdatePlannerTest {
 	}
 
 	@Test
+	void forceCopyModIsInstalledInStandardModsFolderAndProjection() {
+		String path = "mods/forced-1.0.jar";
+		ModpackJsons.ModpackContentFields.ModpackContentItem item = new ModpackJsons.ModpackContentFields.ModpackContentItem(
+				path, 9, "mod", false, true, TARGET_HASH, "0");
+		ModpackJsons.ModpackContentFields target = manifest(Map.of(path, item),
+				ledger(entry(path, TARGET_HASH, 9, OwnershipLedger.Status.PRESENT)));
+
+		UpdatePlan plan = UpdatePlanner.plan(input(target, Map.of()));
+
+		assertTrue(plan.operations().stream().anyMatch(operation -> operation.root() == Root.PROJECTION && operation.relativePath().equals(path)
+				&& operation.operation() == OperationType.INSTALL_OBJECT && TARGET_HASH.equals(operation.expectedObjectHash())));
+		assertTrue(plan.operations().stream().anyMatch(operation -> operation.root() == Root.GAME_DIR && operation.relativePath().equals(path)
+				&& operation.operation() == OperationType.INSTALL_OBJECT && TARGET_HASH.equals(operation.expectedObjectHash())));
+	}
+
+	@Test
 	void firstInstallConsentPreservesAndRemovesAnObservedLocalMod() {
 		String path = "mods/local.jar";
 		FileState local = new FileState(OLD_HASH, 8, true);

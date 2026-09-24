@@ -129,7 +129,7 @@ public final class ModpackCandidateScanner {
 				if (result.selected == null || result.file == null) continue;
 				GroupManifest.GroupFile file = result.file;
 				filesByGroup.get(result.selected.groupId()).put(result.selected.logicalPath(), new ModpackJsons.CompleteModpackContentFields.GroupFileFields(
-						String.valueOf(file.size()), file.type(), file.editable(), file.sha1(), file.murmur()));
+						String.valueOf(file.size()), file.type(), file.editable(), file.forceCopy(), file.sha1(), file.murmur()));
 				if (result.object != null) {
 					StagedObject redundant = objects.putIfAbsent(file.sha1().toLowerCase(Locale.ROOT), result.object);
 					if (redundant != null) result.object.delete();
@@ -190,15 +190,16 @@ public final class ModpackCandidateScanner {
 		CandidateProvenance provenance = null;
 		if (selected != null && file != null) {
 			PathRuleSet.Decision editable = rules.editable(selected.logicalPath());
-			file = new GroupManifest.GroupFile(file.size(), file.type(), editable.matched(), file.sha1(), file.murmur());
-			provenance = new CandidateProvenance(selected, editable.decisiveRule());
+			PathRuleSet.Decision forceCopy = rules.forceCopy(selected.logicalPath());
+			file = new GroupManifest.GroupFile(file.size(), file.type(), editable.matched(), forceCopy.matched(), file.sha1(), file.murmur());
+			provenance = new CandidateProvenance(selected, editable.decisiveRule(), forceCopy.decisiveRule());
 		}
 		return new PathResult(selected, file, object, provenance, exclusions, pair.explicit != null ? pair.explicit : pair.synced);
 	}
 
 	private static GroupRules compileRules(String groupId, ServerConfigJsons.GroupDeclaration declaration) throws CandidateBuildException {
 		return new GroupRules(compileRuleSet(declaration.syncedFiles, groupId, "syncedFiles"), compileRuleSet(declaration.excludedFiles, groupId, "excludedFiles"),
-				compileRuleSet(declaration.allowEditsInFiles, groupId, "allowEditsInFiles"));
+				compileRuleSet(declaration.allowEditsInFiles, groupId, "allowEditsInFiles"), compileRuleSet(declaration.forceCopyFilesToStandardLocation, groupId, "forceCopyFilesToStandardLocation"));
 	}
 
 	private static PathRuleSet compileRuleSet(Set<String> rules, String groupId, String name) throws CandidateBuildException {
@@ -303,7 +304,7 @@ public final class ModpackCandidateScanner {
 		return values == null ? Set.of() : new LinkedHashSet<>(new TreeSet<>(values));
 	}
 
-	private record GroupRules(PathRuleSet syncedFiles, PathRuleSet excludedFiles, PathRuleSet allowEditsInFiles) {
+	private record GroupRules(PathRuleSet syncedFiles, PathRuleSet excludedFiles, PathRuleSet allowEditsInFiles, PathRuleSet forceCopyFilesToStandardLocation) {
 		private PathRuleSet.Decision synced(String path) {
 			return syncedFiles.evaluate(path);
 		}
@@ -314,6 +315,10 @@ public final class ModpackCandidateScanner {
 
 		private PathRuleSet.Decision editable(String path) {
 			return allowEditsInFiles.evaluate(path);
+		}
+
+		private PathRuleSet.Decision forceCopy(String path) {
+			return forceCopyFilesToStandardLocation.evaluate(path);
 		}
 	}
 

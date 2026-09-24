@@ -73,6 +73,7 @@ public class ConfigUtils {
 				group.syncedFiles = normalizeRuleSet(group.syncedFiles, "syncedFiles", groupEntry.getKey(), ownGroupPrefix, true);
 				group.excludedFiles = normalizeRuleSet(group.excludedFiles, "excludedFiles", groupEntry.getKey(), ownGroupPrefix, false);
 				group.allowEditsInFiles = normalizeRuleSet(group.allowEditsInFiles, "allowEditsInFiles", groupEntry.getKey(), ownGroupPrefix, false);
+				group.forceCopyFilesToStandardLocation = normalizeRuleSet(group.forceCopyFilesToStandardLocation, "forceCopyFilesToStandardLocation", groupEntry.getKey(), ownGroupPrefix, false);
 			}
 		}
 	}

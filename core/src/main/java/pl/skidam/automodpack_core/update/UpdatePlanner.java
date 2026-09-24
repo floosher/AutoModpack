@@ -263,7 +263,7 @@ public final class UpdatePlanner {
 	/** Pack paths that keep a live copy in the working directory: editable files, which the player owns in place, and service mods the loader requires there. */
 	private static Set<String> liveCopyPaths(Map<String, ModpackJsons.ModpackContentFields.ModpackContentItem> targetItems, Set<String> forceCopyServicePaths) {
 		Set<String> paths = new HashSet<>(forceCopyServicePaths);
-		for (var entry : targetItems.entrySet()) if (entry.getValue().editable) paths.add(entry.getKey());
+		for (var entry : targetItems.entrySet()) if (entry.getValue().editable || entry.getValue().forceCopy) paths.add(entry.getKey());
 		return paths;
 	}
 

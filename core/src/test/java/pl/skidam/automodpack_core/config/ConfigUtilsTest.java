@@ -17,12 +17,14 @@ class ConfigUtilsTest {
 		ServerConfigJsons.GroupDeclaration group = new ServerConfigJsons.GroupDeclaration();
 		group.syncedFiles = new LinkedHashSet<>(List.of("third", "first", "second"));
 		group.allowEditsInFiles = new LinkedHashSet<>(List.of("third", "first", "second"));
+		group.forceCopyFilesToStandardLocation = new LinkedHashSet<>(List.of("third", "first", "second"));
 		config.modpack = Map.of("General", new LinkedHashMap<>(Map.of("main", group)));
 
 		ConfigUtils.normalizeServerConfig(config);
 
 		assertEquals(List.of("third", "first", "second"), List.copyOf(group.syncedFiles));
 		assertEquals(List.of("third", "first", "second"), List.copyOf(group.allowEditsInFiles));
+		assertEquals(List.of("third", "first", "second"), List.copyOf(group.forceCopyFilesToStandardLocation));
 	}
 
 	@Test
@@ -32,6 +34,7 @@ class ConfigUtilsTest {
 		group.syncedFiles = new LinkedHashSet<>(List.of("/mods/*.jar", "/automodpack/host-modpack/main/extra", "!kubejs/server_scripts/**", "!/kubejs/assets/**"));
 		group.excludedFiles = new LinkedHashSet<>(List.of("/automodpack/host-modpack/main/secret.bin", "!/automodpack/host-modpack/main/keep.bin"));
 		group.allowEditsInFiles = new LinkedHashSet<>(List.of("//config/**"));
+		group.forceCopyFilesToStandardLocation = new LinkedHashSet<>(List.of("/mods/forced-*.jar"));
 		config.modpack = Map.of("General", new LinkedHashMap<>(Map.of("main", group)));
 
 		ConfigUtils.normalizeServerConfig(config);
@@ -39,6 +42,7 @@ class ConfigUtilsTest {
 		assertEquals(List.of("mods/*.jar", "!kubejs/server_scripts/**", "!kubejs/assets/**"), List.copyOf(group.syncedFiles));
 		assertEquals(List.of("secret.bin", "!keep.bin"), List.copyOf(group.excludedFiles));
 		assertEquals(List.of("config/**"), List.copyOf(group.allowEditsInFiles));
+		assertEquals(List.of("mods/forced-*.jar"), List.copyOf(group.forceCopyFilesToStandardLocation));
 	}
 
 	@Test

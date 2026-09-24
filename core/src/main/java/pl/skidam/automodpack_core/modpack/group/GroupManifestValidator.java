@@ -98,7 +98,7 @@ public final class GroupManifestValidator {
 				if (!ModpackPathPolicy.isValidTypeAndPath(path, file.type))
 					errors.add("Group '" + groupId + "' file '" + path + "' has an invalid type/path combination: " + file.type);
 			if (!HashUtils.isSha1(file.sha1)) errors.add("Group '" + groupId + "' file '" + path + "' has invalid SHA-1");
-			files.put(path, new GroupManifest.GroupFile(size, file.type, file.editable,
+			files.put(path, new GroupManifest.GroupFile(size, file.type, file.editable, file.forceCopy,
 					value(file.sha1).toLowerCase(Locale.ROOT), file.murmur));
 		}
 		return files;

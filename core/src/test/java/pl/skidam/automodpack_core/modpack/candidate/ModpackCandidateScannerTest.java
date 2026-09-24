@@ -404,6 +404,28 @@ class ModpackCandidateScannerTest {
 	}
 
 	@Test
+	void forceCopyFilesAreMarkedAndRecordProvenance() throws Exception {
+		Path server = tempDir.resolve("server");
+		Path groups = tempDir.resolve("groups");
+		Files.createDirectories(groups.resolve("main/mods"));
+		writeModJar(groups.resolve("main/mods/forced-1.0.jar"));
+		writeModJar(groups.resolve("main/mods/other-1.0.jar"));
+		ServerConfigJsons.GroupDeclaration main = group();
+		main.forceCopyFilesToStandardLocation = new LinkedHashSet<>(List.of("/mods/forced-*.jar"));
+
+		ModpackCandidate candidate = scan(server, groups, Map.of("main", main));
+		var files = candidate.manifest().groups().get("main").files();
+
+		assertTrue(files.get("mods/forced-1.0.jar").forceCopy());
+		assertFalse(files.get("mods/forced-1.0.jar").editable());
+		assertFalse(files.get("mods/other-1.0.jar").forceCopy());
+
+		CandidateProvenance forcedProvenance = candidate.provenance().get(ModpackCandidate.provenanceKey("main", "mods/forced-1.0.jar"));
+		assertNotNull(forcedProvenance);
+		assertEquals("/mods/forced-*.jar", forcedProvenance.forceCopyRule());
+	}
+
+	@Test
 	void reservedWindowsNamesStayExcludedWithoutAnyRules() throws Exception {
 		Path server = tempDir.resolve("server");
 		Path groups = tempDir.resolve("groups");

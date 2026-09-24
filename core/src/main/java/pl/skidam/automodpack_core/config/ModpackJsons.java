@@ -33,17 +33,23 @@ public class ModpackJsons {
 			public String size = "";
 			public String type = "";
 			public boolean editable;
+			public boolean forceCopy;
 			public String sha1 = "";
 			public String murmur;
 
 			public GroupFileFields() {}
 
-			public GroupFileFields(String size, String type, boolean editable, String sha1, String murmur) {
+			public GroupFileFields(String size, String type, boolean editable, boolean forceCopy, String sha1, String murmur) {
 				this.size = size;
 				this.type = type;
 				this.editable = editable;
+				this.forceCopy = forceCopy;
 				this.sha1 = sha1;
 				this.murmur = murmur;
+			}
+
+			public GroupFileFields(String size, String type, boolean editable, String sha1, String murmur) {
+				this(size, type, editable, false, sha1, murmur);
 			}
 		}
 	}
@@ -74,21 +80,27 @@ public class ModpackJsons {
 			public final long size;
 			public final String type;
 			public final boolean editable;
+			public final boolean forceCopy;
 			public final String sha1;
 			public final String murmur;
 
-			public ModpackContentItem(String file, long size, String type, boolean editable, String sha1, String murmur) {
+			public ModpackContentItem(String file, long size, String type, boolean editable, boolean forceCopy, String sha1, String murmur) {
 				this.file = file;
 				this.size = size;
 				this.type = type;
 				this.editable = editable;
+				this.forceCopy = forceCopy;
 				this.sha1 = sha1;
 				this.murmur = murmur;
 			}
 
+			public ModpackContentItem(String file, long size, String type, boolean editable, String sha1, String murmur) {
+				this(file, size, type, editable, false, sha1, murmur);
+			}
+
 			@Override
 			public String toString() {
-				return String.format(Locale.ROOT, "ModpackContentItems(file=%s, size=%s, type=%s, editable=%s, sha1=%s, murmur=%s)", file, size, type, editable, sha1, murmur);
+				return String.format(Locale.ROOT, "ModpackContentItems(file=%s, size=%s, type=%s, editable=%s, forceCopy=%s, sha1=%s, murmur=%s)", file, size, type, editable, forceCopy, sha1, murmur);
 			}
 
 			@Override
@@ -96,14 +108,14 @@ public class ModpackJsons {
 				if (this == obj) return true;
 				if (obj == null || getClass() != obj.getClass()) return false;
 				ModpackContentItem that = (ModpackContentItem) obj;
-				return editable == that.editable && size == that.size
+				return editable == that.editable && forceCopy == that.forceCopy && size == that.size
 						&& Objects.equals(file, that.file) && Objects.equals(type, that.type)
 						&& Objects.equals(sha1, that.sha1) && Objects.equals(murmur, that.murmur);
 			}
 
 			@Override
 			public int hashCode() {
-				return Objects.hash(file, size, type, editable, sha1, murmur);
+				return Objects.hash(file, size, type, editable, forceCopy, sha1, murmur);
 			}
 		}
 

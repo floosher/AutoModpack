@@ -91,5 +91,6 @@ public class ServerConfigJsons {
 		public Set<String> syncedFiles = Set.of();
 		public Set<String> excludedFiles = Set.of();
 		public Set<String> allowEditsInFiles = Set.of();
+		public Set<String> forceCopyFilesToStandardLocation = Set.of();
 	}
 }
