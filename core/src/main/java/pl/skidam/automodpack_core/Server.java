@@ -6,6 +6,7 @@ import static pl.skidam.automodpack_core.storage.StoragePaths.SERVER_CONFIG_FILE
 import java.io.IOException;
 
 import pl.skidam.automodpack_core.config.ConfigTools;
+import pl.skidam.automodpack_core.config.ReconfConfigs;
 import pl.skidam.automodpack_core.config.ServerConfigJsons;
 import pl.skidam.automodpack_core.modpack.ModpackExecutor;
 import pl.skidam.automodpack_core.protocol.netty.NettyServer;
@@ -18,9 +19,10 @@ public class Server {
 		NettyServer server = new NettyServer();
 		hostServer = server;
 
-		serverConfig = ConfigTools.readOrCreate(SERVER_CONFIG_FILE, ServerConfigJsons.ServerConfigFieldsV3.class, ServerConfigJsons::standalone);
-		if (serverConfig == null) {
-			LOGGER.error("Failed to load standalone host configuration");
+		try {
+			serverConfig = ReconfConfigs.readOrCreate(SERVER_CONFIG_FILE, ServerConfigJsons.ServerConfigFieldsV3.class, ServerConfigJsons::standalone);
+		} catch (ConfigTools.ConfigException e) {
+			LOGGER.error("Failed to load standalone host configuration: {}", e.getMessage());
 			return;
 		}
 
