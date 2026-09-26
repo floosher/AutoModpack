@@ -191,7 +191,13 @@ public final class HumanConfigMigration {
 	}
 
 	private static ServerConfigJsons.GroupDeclaration mainGroup(ServerConfigJsons.ServerConfigFieldsV3 config) {
-		return config.modpack.categories.computeIfAbsent("General", ignored -> new LinkedHashMap<>()).computeIfAbsent("main", ignored -> new ServerConfigJsons.GroupDeclaration());
+		ServerConfigJsons.GroupDeclaration main = config.modpack.categories.computeIfAbsent("General", ignored -> new LinkedHashMap<>()).computeIfAbsent("main", ignored -> new ServerConfigJsons.GroupDeclaration());
+		// v4 had no groups, so the migrated core group takes the factory declaration's required flags: a
+		// deselectable main group would let players join a migrated server with none of its content.
+		main.description = "Core modpack files";
+		main.required = true;
+		main.defaultSelected = true;
+		return main;
 	}
 
 	private static Set<String> stripLeadingSlashes(List<String> rules) {

@@ -49,6 +49,8 @@ class HumanConfigMigrationTest {
 		assertEquals(ModpackConnectionMode.HOLEPUNCH, config.connectionMode);
 		assertTrue(config.modpack.categories.get("General").get("main").exclude.contains("**/.*"));
 		assertFalse(config.modpack.categories.get("General").get("main").exclude.contains("kubejs/server_scripts/**"));
+		assertTrue(config.modpack.categories.get("General").get("main").required, "the migrated core group must stay required");
+		assertTrue(config.modpack.categories.get("General").get("main").defaultSelected, "the migrated core group must stay default-selected");
 		assertTrue(Files.isRegularFile(conf));
 		assertTrue(Files.isRegularFile(dir.resolve("automodpack-server.json.backup")));
 		assertFalse(Files.exists(json));
