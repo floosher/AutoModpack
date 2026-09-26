@@ -157,15 +157,23 @@ class DnsPinResolverTest {
 	}
 
 	@Test
-	void agreeingPinsAreAuthoritativeEvenBesideAbsence() {
+	void unanimousAgreeingPinsAreAuthoritative() {
 		var unanimous = DnsPinResolver.combineResolverResults("play.example.com",
 				List.of(new DnsPinResolver.ResolverPin(FP_A, 300), new DnsPinResolver.ResolverPin(FP_A, 600)));
-		var pinnedBesideAbsence = DnsPinResolver.combineResolverResults("play.example.com",
-				List.of(new DnsPinResolver.ResolverPin(FP_A, 300), new DnsPinResolver.ResolverAbsent(120)));
 
 		assertEquals(FP_A, assertInstanceOf(DnsPinResolver.Authoritative.class, unanimous.result()).fingerprint());
 		assertEquals(300, unanimous.ttlSeconds());
-		assertEquals(FP_A, assertInstanceOf(DnsPinResolver.Authoritative.class, pinnedBesideAbsence.result()).fingerprint());
+	}
+
+	@Test
+	void aLonePinBesideAbsenceOrUnavailabilityIsNeverAuthoritative() {
+		var pinnedBesideAbsence = DnsPinResolver.combineResolverResults("play.example.com",
+				List.of(new DnsPinResolver.ResolverPin(FP_A, 300), new DnsPinResolver.ResolverAbsent(120)));
+		var pinnedBesideUnavailability = DnsPinResolver.combineResolverResults("play.example.com",
+				List.of(new DnsPinResolver.ResolverPin(FP_A, 300), new DnsPinResolver.ResolverUnavailable()));
+
+		assertEquals(DnsPinResolver.NoPolicyReason.UNAVAILABLE, assertInstanceOf(DnsPinResolver.NoPolicy.class, pinnedBesideAbsence.result()).reason());
+		assertEquals(DnsPinResolver.NoPolicyReason.UNAVAILABLE, assertInstanceOf(DnsPinResolver.NoPolicy.class, pinnedBesideUnavailability.result()).reason());
 	}
 
 	@Test

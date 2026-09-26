@@ -185,7 +185,8 @@ public final class DnsPinResolver {
 	static CombinedResult combineResolverResults(String host, List<ResolverResult> results) {
 		// The record is the operator's explicit statement, so the combination fails closed: a resolver that saw a
 		// malformed record, or two that disagree on the fingerprint, is a contradiction no available answer can
-		// paper over. Only a chorus of unavailable resolvers reads as no policy at all.
+		// paper over. A pin is trusted only when every resolver reports the same record as DNSSEC-validated - a
+		// single validated answer beside an absent or unavailable peer is no chorus, and reads as no policy.
 		if (results.stream().anyMatch(ResolverMisconfigured.class::isInstance)) {
 			String reason = results.stream().filter(ResolverMisconfigured.class::isInstance).map(ResolverMisconfigured.class::cast).map(ResolverMisconfigured::reason).findFirst().orElse("misconfigured");
 			LOGGER.error("DNSSEC AutoModpack fingerprint for {} is invalid: {}", host, reason);
@@ -193,10 +194,13 @@ public final class DnsPinResolver {
 		}
 
 		List<String> pins = results.stream().filter(ResolverPin.class::isInstance).map(ResolverPin.class::cast).map(ResolverPin::fingerprint).distinct().toList();
-		if (pins.size() == 1) return new CombinedResult(new Authoritative(pins.get(0)), minimumTtl(results));
 		if (pins.size() > 1) {
 			LOGGER.error("DNS resolvers disagree on the AutoModpack fingerprint for {}", host);
 			return new CombinedResult(new Misconfigured("resolvers disagree on the fingerprint"), 0);
+		}
+
+		if (pins.size() == 1 && results.stream().allMatch(ResolverPin.class::isInstance)) {
+			return new CombinedResult(new Authoritative(pins.get(0)), minimumTtl(results));
 		}
 
 		if (results.stream().allMatch(ResolverAbsent.class::isInstance)) {
