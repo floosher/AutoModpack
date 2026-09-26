@@ -137,7 +137,8 @@ jobs:
           files: build-artifacts/${{ matrix.file }}
           name: ${{ matrix.name }}
           version: ${{ matrix.mod_version }}
-          version-type: release
+          # a hyphen after the number (4.0.0-beta44, 5.0.0-rc.1) marks a prerelease channel
+          version-type: ${{ contains(matrix.mod_version, '-') && 'beta' || 'release' }}
           loaders: ${{ matrix.loader }}
           game-versions: ${{ matrix.publish_versions }}
           game-version-filter: any
